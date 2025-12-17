@@ -1,6 +1,16 @@
+import sys
+from pathlib import Path
+
+# Add project root to PYTHONPATH
+ROOT_DIR = Path(__file__).resolve().parents[1]
+sys.path.append(str(ROOT_DIR))
+
 import streamlit as st
 import joblib
-from pathlib import Path
+
+# Now this will work
+from src.preprocess import clean_text
+
 
 # Import the same cleaning function
 from src.preprocess import clean_text
