@@ -1,36 +1,27 @@
 import sys
 from pathlib import Path
 
-# Add project root to PYTHONPATH
+# -------------------------------------------------
+# Add project root to PYTHONPATH (Streamlit Cloud fix)
+# -------------------------------------------------
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT_DIR))
 
 import streamlit as st
-import joblib
+from src.predict import predict_intent
 
-# Now this will work
-from src.preprocess import clean_text
+# -------------------------------------------------
+# Page Config
+# -------------------------------------------------
+st.set_page_config(
+    page_title="Intent X",
+    page_icon="🧠",
+    layout="centered"
+)
 
-
-# Import the same cleaning function
-from src.preprocess import clean_text
-
-# Paths
-MODEL_DIR = Path("models")
-PROCESSED_DIR = Path("data/processed")
-
-# Load artifacts
-@st.cache_resource
-def load_artifacts():
-    model = joblib.load(MODEL_DIR / "intent_classifier.joblib")
-    vectorizer = joblib.load(PROCESSED_DIR / "tfidf_vectorizer.joblib")
-    return model, vectorizer
-
-
-model, vectorizer = load_artifacts()
-
+# -------------------------------------------------
 # UI
-st.set_page_config(page_title="Intent X", page_icon="🧠")
+# -------------------------------------------------
 st.title("Intent X — Intent Classification Engine")
 st.write("Enter a message and the system will predict the user intent.")
 
@@ -40,15 +31,20 @@ user_input = st.text_area(
     height=120
 )
 
+# -------------------------------------------------
+# Prediction
+# -------------------------------------------------
 if st.button("Predict Intent"):
     if user_input.strip() == "":
         st.warning("Please enter some text.")
     else:
-        cleaned = clean_text(user_input)
-        vectorized = vectorizer.transform([cleaned])
+        intent, confidence = predict_intent(user_input)
 
-        prediction = model.predict(vectorized)[0]
-        confidence = model.predict_proba(vectorized).max()
-
-        st.success(f"Predicted Intent: **{prediction}**")
-        st.info(f"Confidence: **{confidence:.2%}**")
+        if intent == "uncertain_intent":
+            st.warning("I'm not confident enough to understand this request.")
+            st.info("Please rephrase or provide more details.")
+        else:
+            st.success(
+                f"🎯 Predicted Intent: **{intent.replace('_', ' ').title()}**"
+            )
+            st.info(f"📊 Confidence: **{confidence:.2%}**")
