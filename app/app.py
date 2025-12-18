@@ -1,27 +1,15 @@
 import sys
 from pathlib import Path
 
-# -------------------------------------------------
-# Add project root to PYTHONPATH (Streamlit Cloud fix)
-# -------------------------------------------------
+# Add project root to PYTHONPATH
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT_DIR))
 
 import streamlit as st
 from src.predict import predict_intent
 
-# -------------------------------------------------
-# Page Config
-# -------------------------------------------------
-st.set_page_config(
-    page_title="Intent X",
-    page_icon="🧠",
-    layout="centered"
-)
-
-# -------------------------------------------------
 # UI
-# -------------------------------------------------
+st.set_page_config(page_title="Intent X", page_icon="🧠")
 st.title("Intent X — Intent Classification Engine")
 st.write("Enter a message and the system will predict the user intent.")
 
@@ -31,18 +19,25 @@ user_input = st.text_area(
     height=120
 )
 
-# -------------------------------------------------
-# Prediction
-# -------------------------------------------------
+# 👇 NOTHING RUNS UNTIL BUTTON IS CLICKED
 if st.button("Predict Intent"):
+
     if user_input.strip() == "":
         st.warning("Please enter some text.")
+
     else:
-        intent, confidence = predict_intent(user_input)
+        intent, confidence, suggestions = predict_intent(user_input)
 
         if intent == "uncertain_intent":
-            st.warning("I'm not confident enough to understand this request.")
-            st.info("Please rephrase or provide more details.")
+            st.warning("🤔 I need a bit more clarity.")
+
+            if suggestions:
+                st.write("Did you mean one of these?")
+                for s in suggestions:
+                    st.write(f"- {s.replace('_', ' ').title()}")
+
+            st.info("Please clarify your issue in more detail.")
+
         else:
             st.success(
                 f"🎯 Predicted Intent: **{intent.replace('_', ' ').title()}**"

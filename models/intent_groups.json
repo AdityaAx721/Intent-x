@@ -1,0 +1,21 @@
+{
+  "withdrawal_issues": [
+    "cash_withdrawal",
+    "declined_cash_withdrawal",
+    "cash_withdrawal_charge",
+    "cash_withdrawal_not_received"
+  ],
+  "card_issues": [
+    "card_swallowed",
+    "card_payment_wrong_exchange_rate",
+    "card_payment_fee_charged",
+    "card_not_working",
+    "card_blocked"
+  ],
+  "transfer_issues": [
+    "card_to_card_transfer",
+    "international_transfer",
+    "bank_transfer_wrong_amount",
+    "bank_transfer_charge"
+  ]
+}

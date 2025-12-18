@@ -4,28 +4,22 @@ from pathlib import Path
 
 from src.preprocess import clean_text
 
-# --------------------
-# Config
-# --------------------
 CONFIDENCE_THRESHOLD = 0.30
 
-# Paths
 MODEL_DIR = Path("models")
 DATA_DIR = Path("data/processed")
 
-# Load artifacts
 model = joblib.load(MODEL_DIR / "intent_classifier.joblib")
 vectorizer = joblib.load(DATA_DIR / "tfidf_vectorizer.joblib")
 
-# Load intent mapping
 with open(MODEL_DIR / "intent_mapping.json") as f:
     INTENT_MAP = json.load(f)
 
+with open(MODEL_DIR / "intent_groups.json") as f:
+    INTENT_GROUPS = json.load(f)
+
 
 def predict_intent(text: str):
-    """
-    Predict intent with confidence & fallback handling
-    """
     cleaned_text = clean_text(text)
     vectorized_text = vectorizer.transform([cleaned_text])
 
@@ -34,7 +28,10 @@ def predict_intent(text: str):
     confidence = probs[pred_id]
 
     if confidence < CONFIDENCE_THRESHOLD:
-        return "uncertain_intent", confidence
+        # Return top 3 possible intents
+        top_ids = probs.argsort()[-3:][::-1]
+        possible_intents = [INTENT_MAP[str(i)] for i in top_ids]
+        return "uncertain_intent", confidence, possible_intents
 
     intent_name = INTENT_MAP[str(pred_id)]
-    return intent_name, confidence
+    return intent_name, confidence, None
